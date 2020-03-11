@@ -20,7 +20,6 @@ import com.netflix.conductor.common.metadata.tasks.PollData;
 import com.netflix.conductor.common.metadata.tasks.Task;
 import com.netflix.conductor.common.metadata.tasks.TaskDef;
 import com.netflix.conductor.common.run.Workflow;
-
 import java.util.List;
 
 /**
@@ -75,14 +74,6 @@ public interface ExecutionDAO {
 	 * @see TaskDef#concurrencyLimit()
 	 */
 	boolean exceedsInProgressLimit(Task task);
-
-	/**
-	 * Checks if the Task is rate limited or not based on the {@link Task#getRateLimitPerFrequency()} and {@link Task#getRateLimitFrequencyInSeconds()}
-	 * @param task: which needs to be evaluated whether it is rateLimited or not
-	 * @return true: If the {@link Task} is rateLimited
-	 * 		false: If the {@link Task} is not rateLimited
-	 */
-	boolean exceedsRateLimitPerFrequency(Task task);
 	
 	/**
 	 * 
@@ -253,11 +244,4 @@ public interface ExecutionDAO {
 	 * @return list of matching events
 	 */
 	List<EventExecution> getEventExecutions(String eventHandlerName, String eventName, String messageId, int max);
-	
-	void updateLastPoll(String taskDefName, String domain, String workerId);
-	
-	PollData getPollData(String taskDefName, String domain);
-
-	List<PollData> getPollData(String taskDefName);
-
 }

@@ -32,13 +32,13 @@ import com.netflix.conductor.common.run.Workflow;
 import com.netflix.conductor.common.run.Workflow.WorkflowStatus;
 import com.netflix.conductor.common.utils.ExternalPayloadStorage.Operation;
 import com.netflix.conductor.common.utils.ExternalPayloadStorage.PayloadType;
+import com.netflix.conductor.common.utils.TaskUtils;
+import com.netflix.conductor.core.config.Configuration;
 import com.netflix.conductor.core.execution.mapper.TaskMapper;
 import com.netflix.conductor.core.execution.mapper.TaskMapperContext;
 import com.netflix.conductor.core.utils.ExternalPayloadStorageUtils;
 import com.netflix.conductor.core.utils.IDGenerator;
-import com.netflix.conductor.core.utils.QueueUtils;
 import com.netflix.conductor.dao.MetadataDAO;
-import com.netflix.conductor.dao.QueueDAO;
 import com.netflix.conductor.metrics.Monitors;
 import java.util.Collections;
 import java.util.HashMap;
@@ -67,24 +67,26 @@ public class DeciderService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DeciderService.class);
 
-    private final QueueDAO queueDAO;
     private final ParametersUtils parametersUtils;
     private final ExternalPayloadStorageUtils externalPayloadStorageUtils;
     private final MetadataDAO metadataDAO;
+    private final Configuration config;
 
     private final Map<String, TaskMapper> taskMappers;
 
     private final Predicate<Task> isNonPendingTask = task -> !task.isRetried() && !task.getStatus().equals(SKIPPED) && !task.isExecuted();
 
+    private static final String PENDING_TASK_TIME_THRESHOLD_PROPERTY_NAME = "workflow.task.pending.time.threshold.minutes";
+
     @Inject
-    public DeciderService(ParametersUtils parametersUtils, QueueDAO queueDAO, MetadataDAO metadataDAO,
+    public DeciderService(ParametersUtils parametersUtils, MetadataDAO metadataDAO,
                           ExternalPayloadStorageUtils externalPayloadStorageUtils,
-                          @Named("TaskMappers") Map<String, TaskMapper> taskMappers) {
-        this.queueDAO = queueDAO;
+                          @Named("TaskMappers") Map<String, TaskMapper> taskMappers, Configuration configuration) {
         this.metadataDAO = metadataDAO;
         this.parametersUtils = parametersUtils;
         this.taskMappers = taskMappers;
         this.externalPayloadStorageUtils = externalPayloadStorageUtils;
+        this.config = configuration;
     }
 
     //QQ public method validation of the input params
@@ -114,14 +116,16 @@ public class DeciderService {
 
         DeciderOutcome outcome = new DeciderOutcome();
 
-        if (workflow.getStatus().equals(WorkflowStatus.PAUSED)) {
-            LOGGER.debug("Workflow " + workflow.getWorkflowId() + " is paused");
-            return outcome;
-        }
-
         if (workflow.getStatus().isTerminal()) {
             //you cannot evaluate a terminal workflow
             LOGGER.debug("Workflow {} is already finished. Reason: {}", workflow, workflow.getReasonForIncompletion());
+            return outcome;
+        }
+
+        checkWorkflowTimeout(workflow);
+
+        if (workflow.getStatus().equals(WorkflowStatus.PAUSED)) {
+            LOGGER.debug("Workflow " + workflow.getWorkflowId() + " is paused");
             return outcome;
         }
 
@@ -162,7 +166,7 @@ public class DeciderService {
             }
 
             if (taskDefinition.isPresent()) {
-                checkForTimeout(taskDefinition.get(), pendingTask);
+                checkTaskTimeout(taskDefinition.get(), pendingTask);
                 // If the task has not been updated for "responseTimeoutSeconds" then mark task as TIMED_OUT
                 if (isResponseTimedOut(taskDefinition.get(), pendingTask)) {
                     timeoutTask(taskDefinition.get(), pendingTask);
@@ -188,6 +192,9 @@ public class DeciderService {
             if (!pendingTask.isExecuted() && !pendingTask.isRetried() && pendingTask.getStatus().isTerminal()) {
                 pendingTask.setExecuted(true);
                 List<Task> nextTasks = getNextTask(workflow, pendingTask);
+                if (pendingTask.isLoopOverTask() && !TaskType.DO_WHILE.name().equals(pendingTask.getTaskType()) && !nextTasks.isEmpty()) {
+                    nextTasks = filterNextLoopOverTasks(nextTasks, pendingTask, workflow);
+                }
                 nextTasks.forEach(nextTask -> tasksToBeScheduled.putIfAbsent(nextTask.getReferenceTaskName(), nextTask));
                 outcome.tasksToBeUpdated.add(pendingTask);
                 LOGGER.debug("Scheduling Tasks from {}, next = {} for workflowId: {}", pendingTask.getTaskDefName(),
@@ -215,6 +222,23 @@ public class DeciderService {
         }
 
         return outcome;
+    }
+
+    protected List<Task> filterNextLoopOverTasks(List<Task> tasks, Task pendingTask, Workflow workflow) {
+
+        //Update the task reference name and iteration
+        tasks.forEach(nextTask -> {
+            nextTask.setReferenceTaskName(TaskUtils.appendIteration(nextTask.getReferenceTaskName(), pendingTask.getIteration()));
+            nextTask.setIteration(pendingTask.getIteration());});
+
+        List<String> tasksInWorkflow = workflow.getTasks().stream()
+            .filter(runningTask -> runningTask.getStatus().equals(Status.IN_PROGRESS) || runningTask.getStatus().isTerminal())
+            .map(Task::getReferenceTaskName)
+            .collect(Collectors.toList());
+
+        return tasks.stream()
+            .filter(runningTask -> !tasksInWorkflow.contains(runningTask.getReferenceTaskName()))
+            .collect(Collectors.toList());
     }
 
     private List<Task> startWorkflow(Workflow workflow) throws TerminateWorkflowException {
@@ -287,7 +311,7 @@ public class DeciderService {
         }
 
         workflow.setOutput(output);
-        externalPayloadStorageUtils.verifyAndUpload(workflow, PayloadType.WORKFLOW_OUTPUT);
+        externalizeWorkflowData(workflow);
     }
 
     private boolean checkForWorkflowCompletion(final Workflow workflow) throws TerminateWorkflowException {
@@ -331,7 +355,7 @@ public class DeciderService {
             }
         }
 
-        String taskReferenceName = task.getReferenceTaskName();
+        String taskReferenceName = task.isLoopOverTask() ? TaskUtils.removeIterationFromTaskRefName(task.getReferenceTaskName()) : task.getReferenceTaskName();
         WorkflowTask taskToSchedule = workflowDef.getNextTask(taskReferenceName);
         while (isTaskSkipped(taskToSchedule, workflow)) {
             taskToSchedule = workflowDef.getNextTask(taskToSchedule.getTaskReferenceName());
@@ -379,7 +403,9 @@ public class DeciderService {
                 startDelay = taskDefinition.getRetryDelaySeconds();
                 break;
             case EXPONENTIAL_BACKOFF:
-                startDelay = taskDefinition.getRetryDelaySeconds() * (1 + task.getRetryCount());
+                int retryDelaySeconds = taskDefinition.getRetryDelaySeconds() * (int) Math.pow(2, task.getRetryCount());
+                // Reset integer overflow to max value
+                startDelay = retryDelaySeconds < 0 ? Integer.MAX_VALUE : retryDelaySeconds;
                 break;
         }
 
@@ -456,14 +482,51 @@ public class DeciderService {
         externalPayloadStorageUtils.verifyAndUpload(task, PayloadType.TASK_OUTPUT);
     }
 
-    @VisibleForTesting
-    void checkForTimeout(TaskDef taskDef, Task task) {
+    void externalizeWorkflowData(Workflow workflow) {
+        externalPayloadStorageUtils.verifyAndUpload(workflow, PayloadType.WORKFLOW_INPUT);
+        externalPayloadStorageUtils.verifyAndUpload(workflow, PayloadType.WORKFLOW_OUTPUT);
+    }
 
-        if (taskDef == null) {
-            LOGGER.warn("missing task type " + task.getTaskDefName() + ", workflowId=" + task.getWorkflowInstanceId());
+    @VisibleForTesting
+    void checkWorkflowTimeout(Workflow workflow) {
+        WorkflowDef workflowDef = workflow.getWorkflowDefinition();
+        if (workflowDef == null) {
+            LOGGER.warn("Missing workflow definition : {}", workflow.getWorkflowId());
             return;
         }
-        if (task.getStatus().isTerminal() || taskDef.getTimeoutSeconds() <= 0 || !task.getStatus().equals(IN_PROGRESS)) {
+        if (workflow.getStatus().isTerminal() || workflowDef.getTimeoutSeconds() <= 0) {
+            return;
+        }
+
+        long timeout = 1000L * workflowDef.getTimeoutSeconds();
+        long now = System.currentTimeMillis();
+        long elapsedTime = now - workflow.getStartTime();
+
+        if (elapsedTime < timeout) {
+            return;
+        }
+
+        String reason = String.format("Workflow timed out after %d seconds. Timeout configured as %d. " +
+                "Timeout policy configured to %s",elapsedTime/1000L, timeout, workflowDef.getTimeoutPolicy().name());
+        Monitors.recordWorkflowTermination(workflow.getWorkflowName(), WorkflowStatus.TIMED_OUT, workflow.getOwnerApp());
+
+        switch (workflowDef.getTimeoutPolicy()) {
+            case ALERT_ONLY:
+                LOGGER.info(reason);
+                return;
+            case TIME_OUT_WF:
+                throw new TerminateWorkflowException(reason, WorkflowStatus.TIMED_OUT);
+        }
+    }
+
+    @VisibleForTesting
+    void checkTaskTimeout(TaskDef taskDef, Task task) {
+
+        if (taskDef == null) {
+            LOGGER.warn("Missing task definition for task:{}/{} in workflow:{}", task.getTaskId(), task.getTaskDefName(), task.getWorkflowInstanceId());
+            return;
+        }
+        if (task.getStatus().isTerminal() || taskDef.getTimeoutSeconds() <= 0 || task.getStartTime() <= 0) {
             return;
         }
 
@@ -475,11 +538,13 @@ public class DeciderService {
             return;
         }
 
-        String reason = "Task timed out after " + elapsedTime + " millisecond.  Timeout configured as " + timeout;
+        String reason = String.format("Task timed out after %d seconds. Timeout configured as %d. "
+            + "Timeout policy configured to %s", elapsedTime/1000L, timeout, taskDef.getTimeoutPolicy().name());
         Monitors.recordTaskTimeout(task.getTaskDefName());
 
         switch (taskDef.getTimeoutPolicy()) {
             case ALERT_ONLY:
+                LOGGER.info(reason);
                 return;
             case RETRY:
                 task.setStatus(TIMED_OUT);
@@ -498,25 +563,34 @@ public class DeciderService {
             LOGGER.warn("missing task type : {}, workflowId= {}", task.getTaskDefName(), task.getWorkflowInstanceId());
             return false;
         }
-        if (task.getStatus().isTerminal() || !task.getStatus().equals(IN_PROGRESS) || taskDefinition.getResponseTimeoutSeconds() == 0) {
+        if (task.getStatus().isTerminal()) {
             return false;
         }
 
-        if (queueDAO.exists(QueueUtils.getQueueName(task), task.getTaskId())) {
-            // this task is present in the queue
-            // this means that it has been updated with callbackAfterSeconds and is not being executed in a worker
+        // calculate pendingTime
+        long now = System.currentTimeMillis();
+        long callbackTime = 1000L * task.getCallbackAfterSeconds();
+        long referenceTime = task.getUpdateTime() > 0 ? task.getUpdateTime() : task.getScheduledTime();
+        long pendingTime = now - (referenceTime + callbackTime);
+        Monitors.recordTaskPendingTime(task.getTaskType(), task.getWorkflowType(), pendingTime);
+        long thresholdMS = config.getIntProperty(PENDING_TASK_TIME_THRESHOLD_PROPERTY_NAME, 60) * 60 * 1000;
+        if (pendingTime > thresholdMS) {
+            LOGGER.warn("Task: {} of type: {} in workflow: {}/{} is in pending state for longer than {} ms",
+                task.getTaskId(), task.getTaskType(), task.getWorkflowInstanceId(), task.getWorkflowType(), thresholdMS);
+        }
+
+        if (!task.getStatus().equals(IN_PROGRESS) || taskDefinition.getResponseTimeoutSeconds() == 0) {
             return false;
         }
 
         LOGGER.debug("Evaluating responseTimeOut for Task: {}, with Task Definition: {}", task, taskDefinition);
-
         long responseTimeout = 1000L * taskDefinition.getResponseTimeoutSeconds();
-        long now = System.currentTimeMillis();
+        long adjustedResponseTimeout = responseTimeout + callbackTime;
         long noResponseTime = now - task.getUpdateTime();
 
-        if (noResponseTime < responseTimeout) {
-            LOGGER.debug("Current responseTime: {} has not exceeded the configured responseTimeout of {} " +
-                    "for the Task: {} with Task Definition: {}", noResponseTime, responseTimeout, task, taskDefinition);
+        if (noResponseTime < adjustedResponseTimeout) {
+            LOGGER.debug("Current responseTime: {} has not exceeded the configured responseTimeout of {} for the Task: {} with Task Definition: {}",
+                pendingTime, responseTimeout, task, taskDefinition);
             return false;
         }
 
@@ -601,8 +675,6 @@ public class DeciderService {
         List<Task> tasksToBeScheduled = new LinkedList<>();
 
         List<Task> tasksToBeUpdated = new LinkedList<>();
-
-        List<Task> tasksToBeRequeued = new LinkedList<>();
 
         boolean isComplete;
 

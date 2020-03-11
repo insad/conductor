@@ -29,7 +29,6 @@ import com.netflix.spectator.api.Registry;
 import com.netflix.spectator.api.Spectator;
 import com.netflix.spectator.api.Timer;
 import com.netflix.spectator.api.histogram.PercentileTimer;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -100,7 +99,6 @@ public class Monitors {
 
 	public static Timer getTimer(String className, String name, String... additionalTags) {
 		Map<String, String> tags = toMap(className, additionalTags);
-		tags.put("unit", TimeUnit.SECONDS.name());
 		return timers.computeIfAbsent(name, s -> new ConcurrentHashMap<>()).computeIfAbsent(tags, t -> {
 			Id id = registry.createId(name, tags);
 			return PercentileTimer.get(registry, id);
@@ -185,7 +183,6 @@ public class Monitors {
 
 	public static void recordRunningWorkflows(long count, String name, String version, String ownerApp) {
 		gauge(classQualifier, "workflow_running", count, "workflowName", name, "version", version, "ownerApp", ""+ownerApp);
-
 	}
 
 	public static void recordTaskTimeout(String taskType) {
@@ -194,6 +191,10 @@ public class Monitors {
 
 	public static void recordTaskResponseTimeout(String taskType) {
 		counter(classQualifier, "task_response_timeout", "taskType", taskType);
+	}
+
+	public static void recordTaskPendingTime(String taskType, String workflowType, long duration) {
+		gauge(classQualifier, "task_pending_time", duration, "workflowName", workflowType, "taskType", taskType);
 	}
 
 	public static void recordWorkflowTermination(String workflowType, WorkflowStatus status, String ownerApp) {
@@ -278,5 +279,13 @@ public class Monitors {
 
 	public static void recordDiscardedIndexingCount(String queueType) {
 		getCounter(Monitors.classQualifier, "discarded_index_count", "queueType", queueType).increment();
+	}
+
+	public static void recordAcquireLockUnsuccessful() {
+		counter(classQualifier, "acquire_lock_unsuccessful");
+	}
+
+	public static void recordAcquireLockFailure(String exceptionClassName) {
+		counter(classQualifier, "acquire_lock_failure", "exceptionType", exceptionClassName);
 	}
 }

@@ -16,6 +16,7 @@ package com.netflix.conductor.dao.es5.index;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.type.MapType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.netflix.conductor.annotations.Trace;
@@ -55,6 +56,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import org.apache.commons.io.IOUtils;
@@ -63,6 +65,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
 import org.apache.http.entity.ContentType;
 import org.apache.http.nio.entity.NByteArrayEntity;
+import org.apache.http.nio.entity.NStringEntity;
 import org.apache.http.util.EntityUtils;
 import org.elasticsearch.action.DocWriteResponse;
 import org.elasticsearch.action.bulk.BulkRequest;
@@ -133,6 +136,7 @@ public class ElasticSearchRestDAOV5 implements IndexDAO {
     private final ConcurrentHashMap<String, BulkRequests> bulkRequests;
     private final int indexBatchSize;
     private final int asyncBufferFlushTimeout;
+    private final ElasticSearchConfiguration config;
 
     static {
         SIMPLE_DATE_FORMAT.setTimeZone(GMT);
@@ -150,6 +154,7 @@ public class ElasticSearchRestDAOV5 implements IndexDAO {
         this.bulkRequests = new ConcurrentHashMap<>();
         this.indexBatchSize = config.getIndexBatchSize();
         this.asyncBufferFlushTimeout = config.getAsyncBufferFlushTimeout();
+        this.config = config;
 
         // Set up a workerpool for performing async operations for workflow and task
         int corePoolSize = 6;
@@ -181,6 +186,29 @@ public class ElasticSearchRestDAOV5 implements IndexDAO {
             });
 
         Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(this::flushBulkRequests, 60, 30, TimeUnit.SECONDS);
+    }
+
+    @PreDestroy
+    private void shutdown() {
+        logger.info("Gracefully shutdown executor service");
+        shutdownExecutorService(logExecutorService);
+        shutdownExecutorService(executorService);
+    }
+
+    private void shutdownExecutorService(ExecutorService execService) {
+        try {
+            execService.shutdown();
+            if (execService.awaitTermination(30, TimeUnit.SECONDS)) {
+                logger.debug("tasks completed, shutting down");
+            } else {
+                logger.warn("Forcing shutdown after waiting for 30 seconds");
+                execService.shutdownNow();
+            }
+        } catch (InterruptedException ie) {
+            logger.warn("Shutdown interrupted, invoking shutdownNow on scheduledThreadPoolExecutor for delay queue");
+            execService.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
     }
 
     @Override
@@ -277,7 +305,16 @@ public class ElasticSearchRestDAOV5 implements IndexDAO {
         if (doesResourceNotExist(resourcePath)) {
 
             try {
-                elasticSearchAdminClient.performRequest(HttpMethod.PUT, resourcePath);
+                ObjectNode setting = objectMapper.createObjectNode();
+                ObjectNode indexSetting = objectMapper.createObjectNode();
+
+                indexSetting.put("number_of_shards", config.getElasticSearchIndexShardCount());
+                indexSetting.put("number_of_replicas", config.getElasticSearchIndexReplicationCount());
+
+                setting.set("index", indexSetting);
+
+                elasticSearchAdminClient.performRequest(HttpMethod.PUT, resourcePath, Collections.emptyMap(),
+                        new NStringEntity(setting.toString(), ContentType.APPLICATION_JSON));
 
                 logger.info("Added '{}' index", index);
             } catch (ResponseException e) {
@@ -375,6 +412,7 @@ public class ElasticSearchRestDAOV5 implements IndexDAO {
             Monitors.recordESIndexTime("index_workflow", WORKFLOW_DOC_TYPE, endTime - startTime);
             Monitors.recordWorkerQueueSize("indexQueue", ((ThreadPoolExecutor) executorService).getQueue().size());
         } catch (Exception e) {
+            Monitors.error(className, "indexWorkflow");
             logger.error("Failed to index workflow: {}", workflow.getWorkflowId(), e);
         }
     }
@@ -505,14 +543,18 @@ public class ElasticSearchRestDAOV5 implements IndexDAO {
             doc.put("payload", message.getPayload());
             doc.put("queue", queue);
             doc.put("created", System.currentTimeMillis());
-
-            indexObject(logIndexName, MSG_DOC_TYPE, doc);
+            indexObject(logIndexName, MSG_DOC_TYPE, null, doc);
             long endTime = Instant.now().toEpochMilli();
             logger.debug("Time taken {} for  indexing message: {}", endTime - startTime, message.getId());
             Monitors.recordESIndexTime("add_message", MSG_DOC_TYPE, endTime - startTime);
         } catch (Exception e) {
             logger.error("Failed to index message: {}", message.getId(), e);
         }
+    }
+
+    @Override
+    public CompletableFuture<Void> asyncAddMessage(String queue, Message message) {
+        return CompletableFuture.runAsync(() -> addMessage(queue, message), executorService);
     }
 
     @Override
@@ -649,10 +691,6 @@ public class ElasticSearchRestDAOV5 implements IndexDAO {
         }
     }
 
-    private SearchResult<String> searchObjectIds(String indexName, QueryBuilder queryBuilder, int start, int size, String docType) throws IOException {
-        return searchObjectIds(indexName, queryBuilder, start, size, null, docType);
-    }
-
     /**
      * Tries to find object ids for a given query in an index.
      *
@@ -703,7 +741,7 @@ public class ElasticSearchRestDAOV5 implements IndexDAO {
     @Override
     public List<String> searchArchivableWorkflows(String indexName, long archiveTtlDays) {
         QueryBuilder q = QueryBuilders.boolQuery()
-                .must(QueryBuilders.rangeQuery("endTime").lt(LocalDate.now().minusDays(archiveTtlDays).toString()))
+                .must(QueryBuilders.rangeQuery("endTime").lt(LocalDate.now().minusDays(archiveTtlDays).toString()).gte(LocalDate.now().minusDays(archiveTtlDays).minusDays(1).toString()))
                 .should(QueryBuilders.termQuery("status", "COMPLETED"))
                 .should(QueryBuilders.termQuery("status", "FAILED"))
                 .should(QueryBuilders.termQuery("status", "TIMED_OUT"))
@@ -713,7 +751,7 @@ public class ElasticSearchRestDAOV5 implements IndexDAO {
 
         SearchResult<String> workflowIds;
         try {
-            workflowIds = searchObjectIds(indexName, q, 0, 1000, WORKFLOW_DOC_TYPE);
+            workflowIds = searchObjectIds(indexName, q, 0, 1000, null, WORKFLOW_DOC_TYPE);
         } catch (IOException e) {
             logger.error("Unable to communicate with ES to find archivable workflows", e);
             return Collections.emptyList();
@@ -742,10 +780,6 @@ public class ElasticSearchRestDAOV5 implements IndexDAO {
         return workflowIds.getResults();
     }
 
-    private void indexObject(final String index, final String docType, final Object doc) {
-        indexObject(index, docType, null, doc);
-    }
-
     private void indexObject(final String index, final String docType, final String docId, final Object doc) {
 
         byte[] docBytes;
@@ -769,9 +803,11 @@ public class ElasticSearchRestDAOV5 implements IndexDAO {
         }
     }
 
-    private void indexBulkRequest(String docType) {
-        indexWithRetry(bulkRequests.get(docType).getBulkRequest(), "Bulk Indexing " + docType, docType);
-        bulkRequests.put(docType,new BulkRequests(System.currentTimeMillis(), new BulkRequest()));
+    private synchronized void indexBulkRequest(String docType) {
+        if (bulkRequests.get(docType).getBulkRequest() != null && bulkRequests.get(docType).getBulkRequest().numberOfActions() > 0) {
+            indexWithRetry(bulkRequests.get(docType).getBulkRequest(), "Bulk Indexing " + docType, docType);
+            bulkRequests.put(docType, new BulkRequests(System.currentTimeMillis(), new BulkRequest()));
+        }
     }
 
     /**
@@ -779,7 +815,7 @@ public class ElasticSearchRestDAOV5 implements IndexDAO {
      * @param request The index request that we want to perform.
      * @param operationDescription The type of operation that we are performing.
      */
-    private synchronized void indexWithRetry(final BulkRequest request, final String operationDescription, String docType) {
+    private void indexWithRetry(final BulkRequest request, final String operationDescription, String docType) {
         try {
             long startTime = Instant.now().toEpochMilli();
             new RetryUtil<BulkResponse>().retryOnException(() -> {
@@ -897,23 +933,15 @@ public class ElasticSearchRestDAOV5 implements IndexDAO {
     }
 
     private static class BulkRequests {
-        private long lastFlushTime;
-        private BulkRequest bulkRequest;
+        private final long lastFlushTime;
+        private final BulkRequest bulkRequest;
 
         public long getLastFlushTime() {
             return lastFlushTime;
         }
 
-        public void setLastFlushTime(long lastFlushTime) {
-            this.lastFlushTime = lastFlushTime;
-        }
-
         public BulkRequest getBulkRequest() {
             return bulkRequest;
-        }
-
-        public void setBulkRequest(BulkRequest bulkRequestBuilder) {
-            this.bulkRequest = bulkRequestBuilder;
         }
 
         BulkRequests(long lastFlushTime, BulkRequest bulkRequest) {

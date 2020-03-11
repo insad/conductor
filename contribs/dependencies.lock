@@ -7,7 +7,7 @@
             ]
         },
         "com.amazonaws:aws-java-sdk-core": {
-            "locked": "1.11.641",
+            "locked": "1.11.700",
             "transitive": [
                 "com.amazonaws:aws-java-sdk-kms",
                 "com.amazonaws:aws-java-sdk-s3",
@@ -27,11 +27,11 @@
             ]
         },
         "com.amazonaws:aws-java-sdk-sqs": {
-            "locked": "1.11.641",
+            "locked": "1.11.700",
             "requested": "latest.release"
         },
         "com.amazonaws:jmespath-java": {
-            "locked": "1.11.641",
+            "locked": "1.11.700",
             "transitive": [
                 "com.amazonaws:aws-java-sdk-kms",
                 "com.amazonaws:aws-java-sdk-s3",
@@ -39,7 +39,7 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.7.0",
+            "locked": "2.10.0",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "io.swagger:swagger-core",
@@ -47,7 +47,7 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.7.5",
+            "locked": "2.10.0",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor",
@@ -62,7 +62,7 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.7.5",
+            "locked": "2.10.0",
             "transitive": [
                 "com.amazonaws:aws-java-sdk-core",
                 "com.amazonaws:jmespath-java",
@@ -334,8 +334,8 @@
             ]
         },
         "net.thisptr:jackson-jq": {
-            "locked": "0.0.8",
-            "requested": "0.0.8"
+            "locked": "0.0.11",
+            "requested": "0.0.11"
         },
         "org.apache.commons:commons-lang3": {
             "locked": "3.2.1",
@@ -400,13 +400,13 @@
             ]
         },
         "org.jruby.jcodings:jcodings": {
-            "locked": "1.0.13",
+            "locked": "1.0.43",
             "transitive": [
                 "org.jruby.joni:joni"
             ]
         },
         "org.jruby.joni:joni": {
-            "locked": "2.1.11",
+            "locked": "2.1.27",
             "transitive": [
                 "net.thisptr:jackson-jq"
             ]
@@ -468,7 +468,7 @@
             ]
         },
         "com.amazonaws:aws-java-sdk-core": {
-            "locked": "1.11.641",
+            "locked": "1.11.700",
             "transitive": [
                 "com.amazonaws:aws-java-sdk-kms",
                 "com.amazonaws:aws-java-sdk-s3",
@@ -488,11 +488,11 @@
             ]
         },
         "com.amazonaws:aws-java-sdk-sqs": {
-            "locked": "1.11.641",
+            "locked": "1.11.700",
             "requested": "latest.release"
         },
         "com.amazonaws:jmespath-java": {
-            "locked": "1.11.641",
+            "locked": "1.11.700",
             "transitive": [
                 "com.amazonaws:aws-java-sdk-kms",
                 "com.amazonaws:aws-java-sdk-s3",
@@ -500,7 +500,7 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.7.0",
+            "locked": "2.10.0",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "io.swagger:swagger-core",
@@ -508,7 +508,7 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.7.5",
+            "locked": "2.10.0",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor",
@@ -523,7 +523,7 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.7.5",
+            "locked": "2.10.0",
             "transitive": [
                 "com.amazonaws:aws-java-sdk-core",
                 "com.amazonaws:jmespath-java",
@@ -796,8 +796,8 @@
             ]
         },
         "net.thisptr:jackson-jq": {
-            "locked": "0.0.8",
-            "requested": "0.0.8"
+            "locked": "0.0.11",
+            "requested": "0.0.11"
         },
         "org.apache.commons:commons-lang3": {
             "locked": "3.2.1",
@@ -862,13 +862,13 @@
             ]
         },
         "org.jruby.jcodings:jcodings": {
-            "locked": "1.0.13",
+            "locked": "1.0.43",
             "transitive": [
                 "org.jruby.joni:joni"
             ]
         },
         "org.jruby.joni:joni": {
-            "locked": "2.1.11",
+            "locked": "2.1.27",
             "transitive": [
                 "net.thisptr:jackson-jq"
             ]
@@ -936,7 +936,7 @@
             ]
         },
         "com.amazonaws:aws-java-sdk-core": {
-            "locked": "1.11.641",
+            "locked": "1.11.700",
             "transitive": [
                 "com.amazonaws:aws-java-sdk-kms",
                 "com.amazonaws:aws-java-sdk-s3",
@@ -956,11 +956,11 @@
             ]
         },
         "com.amazonaws:aws-java-sdk-sqs": {
-            "locked": "1.11.641",
+            "locked": "1.11.700",
             "requested": "latest.release"
         },
         "com.amazonaws:jmespath-java": {
-            "locked": "1.11.641",
+            "locked": "1.11.700",
             "transitive": [
                 "com.amazonaws:aws-java-sdk-kms",
                 "com.amazonaws:aws-java-sdk-s3",
@@ -968,7 +968,7 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.7.0",
+            "locked": "2.10.0",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "io.swagger:swagger-core",
@@ -976,7 +976,7 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.7.5",
+            "locked": "2.10.0",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor",
@@ -991,7 +991,7 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.7.5",
+            "locked": "2.10.0",
             "transitive": [
                 "com.amazonaws:aws-java-sdk-core",
                 "com.amazonaws:jmespath-java",
@@ -1263,8 +1263,8 @@
             ]
         },
         "net.thisptr:jackson-jq": {
-            "locked": "0.0.8",
-            "requested": "0.0.8"
+            "locked": "0.0.11",
+            "requested": "0.0.11"
         },
         "org.apache.commons:commons-lang3": {
             "locked": "3.2.1",
@@ -1329,13 +1329,13 @@
             ]
         },
         "org.jruby.jcodings:jcodings": {
-            "locked": "1.0.13",
+            "locked": "1.0.43",
             "transitive": [
                 "org.jruby.joni:joni"
             ]
         },
         "org.jruby.joni:joni": {
-            "locked": "2.1.11",
+            "locked": "2.1.27",
             "transitive": [
                 "net.thisptr:jackson-jq"
             ]
@@ -1460,7 +1460,7 @@
             ]
         },
         "com.amazonaws:aws-java-sdk-core": {
-            "locked": "1.11.641",
+            "locked": "1.11.700",
             "transitive": [
                 "com.amazonaws:aws-java-sdk-kms",
                 "com.amazonaws:aws-java-sdk-s3",
@@ -1480,11 +1480,11 @@
             ]
         },
         "com.amazonaws:aws-java-sdk-sqs": {
-            "locked": "1.11.641",
+            "locked": "1.11.700",
             "requested": "latest.release"
         },
         "com.amazonaws:jmespath-java": {
-            "locked": "1.11.641",
+            "locked": "1.11.700",
             "transitive": [
                 "com.amazonaws:aws-java-sdk-kms",
                 "com.amazonaws:aws-java-sdk-s3",
@@ -1492,7 +1492,7 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.7.0",
+            "locked": "2.10.0",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "io.swagger:swagger-core",
@@ -1500,7 +1500,7 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.7.5",
+            "locked": "2.10.0",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor",
@@ -1515,7 +1515,7 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.7.5",
+            "locked": "2.10.0",
             "transitive": [
                 "com.amazonaws:aws-java-sdk-core",
                 "com.amazonaws:jmespath-java",
@@ -1787,8 +1787,8 @@
             ]
         },
         "net.thisptr:jackson-jq": {
-            "locked": "0.0.8",
-            "requested": "0.0.8"
+            "locked": "0.0.11",
+            "requested": "0.0.11"
         },
         "org.apache.commons:commons-lang3": {
             "locked": "3.2.1",
@@ -1853,13 +1853,13 @@
             ]
         },
         "org.jruby.jcodings:jcodings": {
-            "locked": "1.0.13",
+            "locked": "1.0.43",
             "transitive": [
                 "org.jruby.joni:joni"
             ]
         },
         "org.jruby.joni:joni": {
-            "locked": "2.1.11",
+            "locked": "2.1.27",
             "transitive": [
                 "net.thisptr:jackson-jq"
             ]
@@ -1921,7 +1921,7 @@
             ]
         },
         "com.amazonaws:aws-java-sdk-core": {
-            "locked": "1.11.641",
+            "locked": "1.11.700",
             "transitive": [
                 "com.amazonaws:aws-java-sdk-kms",
                 "com.amazonaws:aws-java-sdk-s3",
@@ -1941,11 +1941,11 @@
             ]
         },
         "com.amazonaws:aws-java-sdk-sqs": {
-            "locked": "1.11.641",
+            "locked": "1.11.700",
             "requested": "latest.release"
         },
         "com.amazonaws:jmespath-java": {
-            "locked": "1.11.641",
+            "locked": "1.11.700",
             "transitive": [
                 "com.amazonaws:aws-java-sdk-kms",
                 "com.amazonaws:aws-java-sdk-s3",
@@ -1953,7 +1953,7 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.7.0",
+            "locked": "2.10.0",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "io.swagger:swagger-core",
@@ -1961,7 +1961,7 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.7.5",
+            "locked": "2.10.0",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor",
@@ -1976,7 +1976,7 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.7.5",
+            "locked": "2.10.0",
             "transitive": [
                 "com.amazonaws:aws-java-sdk-core",
                 "com.amazonaws:jmespath-java",
@@ -2248,8 +2248,8 @@
             ]
         },
         "net.thisptr:jackson-jq": {
-            "locked": "0.0.8",
-            "requested": "0.0.8"
+            "locked": "0.0.11",
+            "requested": "0.0.11"
         },
         "org.apache.commons:commons-lang3": {
             "locked": "3.2.1",
@@ -2314,13 +2314,13 @@
             ]
         },
         "org.jruby.jcodings:jcodings": {
-            "locked": "1.0.13",
+            "locked": "1.0.43",
             "transitive": [
                 "org.jruby.joni:joni"
             ]
         },
         "org.jruby.joni:joni": {
-            "locked": "2.1.11",
+            "locked": "2.1.27",
             "transitive": [
                 "net.thisptr:jackson-jq"
             ]
@@ -2382,7 +2382,7 @@
             ]
         },
         "com.amazonaws:aws-java-sdk-core": {
-            "locked": "1.11.641",
+            "locked": "1.11.700",
             "transitive": [
                 "com.amazonaws:aws-java-sdk-kms",
                 "com.amazonaws:aws-java-sdk-s3",
@@ -2402,11 +2402,11 @@
             ]
         },
         "com.amazonaws:aws-java-sdk-sqs": {
-            "locked": "1.11.641",
+            "locked": "1.11.700",
             "requested": "latest.release"
         },
         "com.amazonaws:jmespath-java": {
-            "locked": "1.11.641",
+            "locked": "1.11.700",
             "transitive": [
                 "com.amazonaws:aws-java-sdk-kms",
                 "com.amazonaws:aws-java-sdk-s3",
@@ -2414,7 +2414,7 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.7.0",
+            "locked": "2.10.0",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "io.swagger:swagger-core",
@@ -2422,7 +2422,7 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.7.5",
+            "locked": "2.10.0",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor",
@@ -2437,7 +2437,7 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.7.5",
+            "locked": "2.10.0",
             "transitive": [
                 "com.amazonaws:aws-java-sdk-core",
                 "com.amazonaws:jmespath-java",
@@ -2706,6 +2706,24 @@
             "locked": "4.12",
             "requested": "4.12"
         },
+        "log4j:log4j": {
+            "locked": "1.2.17",
+            "transitive": [
+                "org.slf4j:slf4j-log4j12"
+            ]
+        },
+        "net.bytebuddy:byte-buddy": {
+            "locked": "1.9.10",
+            "transitive": [
+                "org.mockito:mockito-core"
+            ]
+        },
+        "net.bytebuddy:byte-buddy-agent": {
+            "locked": "1.9.10",
+            "transitive": [
+                "org.mockito:mockito-core"
+            ]
+        },
         "net.minidev:accessors-smart": {
             "locked": "1.1",
             "transitive": [
@@ -2719,8 +2737,8 @@
             ]
         },
         "net.thisptr:jackson-jq": {
-            "locked": "0.0.8",
-            "requested": "0.0.8"
+            "locked": "0.0.11",
+            "requested": "0.0.11"
         },
         "org.apache.commons:commons-lang3": {
             "locked": "3.2.1",
@@ -2753,36 +2771,37 @@
             ]
         },
         "org.eclipse.jetty:jetty-http": {
-            "locked": "9.3.9.v20160517",
+            "locked": "9.4.22.v20191022",
             "transitive": [
                 "org.eclipse.jetty:jetty-server"
             ]
         },
         "org.eclipse.jetty:jetty-io": {
-            "locked": "9.3.9.v20160517",
+            "locked": "9.4.22.v20191022",
             "transitive": [
+                "org.eclipse.jetty:jetty-http",
                 "org.eclipse.jetty:jetty-server"
             ]
         },
         "org.eclipse.jetty:jetty-security": {
-            "locked": "9.3.9.v20160517",
+            "locked": "9.4.22.v20191022",
             "transitive": [
                 "org.eclipse.jetty:jetty-servlet"
             ]
         },
         "org.eclipse.jetty:jetty-server": {
-            "locked": "9.3.9.v20160517",
-            "requested": "9.3.9.v20160517",
+            "locked": "9.4.22.v20191022",
+            "requested": "9.4.22.v20191022",
             "transitive": [
                 "org.eclipse.jetty:jetty-security"
             ]
         },
         "org.eclipse.jetty:jetty-servlet": {
-            "locked": "9.3.9.v20160517",
-            "requested": "9.3.9.v20160517"
+            "locked": "9.4.22.v20191022",
+            "requested": "9.4.22.v20191022"
         },
         "org.eclipse.jetty:jetty-util": {
-            "locked": "9.3.9.v20160517",
+            "locked": "9.4.22.v20191022",
             "transitive": [
                 "org.eclipse.jetty:jetty-http",
                 "org.eclipse.jetty:jetty-io"
@@ -2827,13 +2846,13 @@
             ]
         },
         "org.jruby.jcodings:jcodings": {
-            "locked": "1.0.13",
+            "locked": "1.0.43",
             "transitive": [
                 "org.jruby.joni:joni"
             ]
         },
         "org.jruby.joni:joni": {
-            "locked": "2.1.11",
+            "locked": "2.1.27",
             "transitive": [
                 "net.thisptr:jackson-jq"
             ]
@@ -2845,11 +2864,11 @@
             ]
         },
         "org.mockito:mockito-core": {
-            "locked": "1.10.19",
-            "requested": "1.10.19"
+            "locked": "3.1.0",
+            "requested": "3.1.0"
         },
         "org.objenesis:objenesis": {
-            "locked": "2.1",
+            "locked": "2.6",
             "transitive": [
                 "org.mockito:mockito-core"
             ]
@@ -2867,7 +2886,7 @@
             ]
         },
         "org.slf4j:slf4j-api": {
-            "locked": "1.7.25",
+            "locked": "1.8.0-alpha1",
             "transitive": [
                 "com.jayway.jsonpath:json-path",
                 "com.netflix.conductor:conductor-common",
@@ -2875,8 +2894,13 @@
                 "com.netflix.spectator:spectator-api",
                 "io.swagger:swagger-core",
                 "io.swagger:swagger-models",
-                "org.apache.kafka:kafka-clients"
+                "org.apache.kafka:kafka-clients",
+                "org.slf4j:slf4j-log4j12"
             ]
+        },
+        "org.slf4j:slf4j-log4j12": {
+            "locked": "1.8.0-alpha1",
+            "requested": "1.8.0-alpha1"
         },
         "org.xerial.snappy:snappy-java": {
             "locked": "1.1.7.2",
@@ -2905,7 +2929,7 @@
             ]
         },
         "com.amazonaws:aws-java-sdk-core": {
-            "locked": "1.11.641",
+            "locked": "1.11.700",
             "transitive": [
                 "com.amazonaws:aws-java-sdk-kms",
                 "com.amazonaws:aws-java-sdk-s3",
@@ -2925,11 +2949,11 @@
             ]
         },
         "com.amazonaws:aws-java-sdk-sqs": {
-            "locked": "1.11.641",
+            "locked": "1.11.700",
             "requested": "latest.release"
         },
         "com.amazonaws:jmespath-java": {
-            "locked": "1.11.641",
+            "locked": "1.11.700",
             "transitive": [
                 "com.amazonaws:aws-java-sdk-kms",
                 "com.amazonaws:aws-java-sdk-s3",
@@ -2937,7 +2961,7 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.7.0",
+            "locked": "2.10.0",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "io.swagger:swagger-core",
@@ -2945,7 +2969,7 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.7.5",
+            "locked": "2.10.0",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor",
@@ -2960,7 +2984,7 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.7.5",
+            "locked": "2.10.0",
             "transitive": [
                 "com.amazonaws:aws-java-sdk-core",
                 "com.amazonaws:jmespath-java",
@@ -3229,6 +3253,24 @@
             "locked": "4.12",
             "requested": "4.12"
         },
+        "log4j:log4j": {
+            "locked": "1.2.17",
+            "transitive": [
+                "org.slf4j:slf4j-log4j12"
+            ]
+        },
+        "net.bytebuddy:byte-buddy": {
+            "locked": "1.9.10",
+            "transitive": [
+                "org.mockito:mockito-core"
+            ]
+        },
+        "net.bytebuddy:byte-buddy-agent": {
+            "locked": "1.9.10",
+            "transitive": [
+                "org.mockito:mockito-core"
+            ]
+        },
         "net.minidev:accessors-smart": {
             "locked": "1.1",
             "transitive": [
@@ -3242,8 +3284,8 @@
             ]
         },
         "net.thisptr:jackson-jq": {
-            "locked": "0.0.8",
-            "requested": "0.0.8"
+            "locked": "0.0.11",
+            "requested": "0.0.11"
         },
         "org.apache.commons:commons-lang3": {
             "locked": "3.2.1",
@@ -3276,36 +3318,37 @@
             ]
         },
         "org.eclipse.jetty:jetty-http": {
-            "locked": "9.3.9.v20160517",
+            "locked": "9.4.22.v20191022",
             "transitive": [
                 "org.eclipse.jetty:jetty-server"
             ]
         },
         "org.eclipse.jetty:jetty-io": {
-            "locked": "9.3.9.v20160517",
+            "locked": "9.4.22.v20191022",
             "transitive": [
+                "org.eclipse.jetty:jetty-http",
                 "org.eclipse.jetty:jetty-server"
             ]
         },
         "org.eclipse.jetty:jetty-security": {
-            "locked": "9.3.9.v20160517",
+            "locked": "9.4.22.v20191022",
             "transitive": [
                 "org.eclipse.jetty:jetty-servlet"
             ]
         },
         "org.eclipse.jetty:jetty-server": {
-            "locked": "9.3.9.v20160517",
-            "requested": "9.3.9.v20160517",
+            "locked": "9.4.22.v20191022",
+            "requested": "9.4.22.v20191022",
             "transitive": [
                 "org.eclipse.jetty:jetty-security"
             ]
         },
         "org.eclipse.jetty:jetty-servlet": {
-            "locked": "9.3.9.v20160517",
-            "requested": "9.3.9.v20160517"
+            "locked": "9.4.22.v20191022",
+            "requested": "9.4.22.v20191022"
         },
         "org.eclipse.jetty:jetty-util": {
-            "locked": "9.3.9.v20160517",
+            "locked": "9.4.22.v20191022",
             "transitive": [
                 "org.eclipse.jetty:jetty-http",
                 "org.eclipse.jetty:jetty-io"
@@ -3350,13 +3393,13 @@
             ]
         },
         "org.jruby.jcodings:jcodings": {
-            "locked": "1.0.13",
+            "locked": "1.0.43",
             "transitive": [
                 "org.jruby.joni:joni"
             ]
         },
         "org.jruby.joni:joni": {
-            "locked": "2.1.11",
+            "locked": "2.1.27",
             "transitive": [
                 "net.thisptr:jackson-jq"
             ]
@@ -3368,11 +3411,11 @@
             ]
         },
         "org.mockito:mockito-core": {
-            "locked": "1.10.19",
-            "requested": "1.10.19"
+            "locked": "3.1.0",
+            "requested": "3.1.0"
         },
         "org.objenesis:objenesis": {
-            "locked": "2.1",
+            "locked": "2.6",
             "transitive": [
                 "org.mockito:mockito-core"
             ]
@@ -3390,7 +3433,7 @@
             ]
         },
         "org.slf4j:slf4j-api": {
-            "locked": "1.7.25",
+            "locked": "1.8.0-alpha1",
             "transitive": [
                 "com.jayway.jsonpath:json-path",
                 "com.netflix.conductor:conductor-common",
@@ -3398,8 +3441,13 @@
                 "com.netflix.spectator:spectator-api",
                 "io.swagger:swagger-core",
                 "io.swagger:swagger-models",
-                "org.apache.kafka:kafka-clients"
+                "org.apache.kafka:kafka-clients",
+                "org.slf4j:slf4j-log4j12"
             ]
+        },
+        "org.slf4j:slf4j-log4j12": {
+            "locked": "1.8.0-alpha1",
+            "requested": "1.8.0-alpha1"
         },
         "org.xerial.snappy:snappy-java": {
             "locked": "1.1.7.2",
@@ -3428,7 +3476,7 @@
             ]
         },
         "com.amazonaws:aws-java-sdk-core": {
-            "locked": "1.11.641",
+            "locked": "1.11.700",
             "transitive": [
                 "com.amazonaws:aws-java-sdk-kms",
                 "com.amazonaws:aws-java-sdk-s3",
@@ -3448,11 +3496,11 @@
             ]
         },
         "com.amazonaws:aws-java-sdk-sqs": {
-            "locked": "1.11.641",
+            "locked": "1.11.700",
             "requested": "latest.release"
         },
         "com.amazonaws:jmespath-java": {
-            "locked": "1.11.641",
+            "locked": "1.11.700",
             "transitive": [
                 "com.amazonaws:aws-java-sdk-kms",
                 "com.amazonaws:aws-java-sdk-s3",
@@ -3460,7 +3508,7 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.7.0",
+            "locked": "2.10.0",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "io.swagger:swagger-core",
@@ -3468,7 +3516,7 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.7.5",
+            "locked": "2.10.0",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor",
@@ -3483,7 +3531,7 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.7.5",
+            "locked": "2.10.0",
             "transitive": [
                 "com.amazonaws:aws-java-sdk-core",
                 "com.amazonaws:jmespath-java",
@@ -3752,6 +3800,24 @@
             "locked": "4.12",
             "requested": "4.12"
         },
+        "log4j:log4j": {
+            "locked": "1.2.17",
+            "transitive": [
+                "org.slf4j:slf4j-log4j12"
+            ]
+        },
+        "net.bytebuddy:byte-buddy": {
+            "locked": "1.9.10",
+            "transitive": [
+                "org.mockito:mockito-core"
+            ]
+        },
+        "net.bytebuddy:byte-buddy-agent": {
+            "locked": "1.9.10",
+            "transitive": [
+                "org.mockito:mockito-core"
+            ]
+        },
         "net.minidev:accessors-smart": {
             "locked": "1.1",
             "transitive": [
@@ -3765,8 +3831,8 @@
             ]
         },
         "net.thisptr:jackson-jq": {
-            "locked": "0.0.8",
-            "requested": "0.0.8"
+            "locked": "0.0.11",
+            "requested": "0.0.11"
         },
         "org.apache.commons:commons-lang3": {
             "locked": "3.2.1",
@@ -3799,36 +3865,37 @@
             ]
         },
         "org.eclipse.jetty:jetty-http": {
-            "locked": "9.3.9.v20160517",
+            "locked": "9.4.22.v20191022",
             "transitive": [
                 "org.eclipse.jetty:jetty-server"
             ]
         },
         "org.eclipse.jetty:jetty-io": {
-            "locked": "9.3.9.v20160517",
+            "locked": "9.4.22.v20191022",
             "transitive": [
+                "org.eclipse.jetty:jetty-http",
                 "org.eclipse.jetty:jetty-server"
             ]
         },
         "org.eclipse.jetty:jetty-security": {
-            "locked": "9.3.9.v20160517",
+            "locked": "9.4.22.v20191022",
             "transitive": [
                 "org.eclipse.jetty:jetty-servlet"
             ]
         },
         "org.eclipse.jetty:jetty-server": {
-            "locked": "9.3.9.v20160517",
-            "requested": "9.3.9.v20160517",
+            "locked": "9.4.22.v20191022",
+            "requested": "9.4.22.v20191022",
             "transitive": [
                 "org.eclipse.jetty:jetty-security"
             ]
         },
         "org.eclipse.jetty:jetty-servlet": {
-            "locked": "9.3.9.v20160517",
-            "requested": "9.3.9.v20160517"
+            "locked": "9.4.22.v20191022",
+            "requested": "9.4.22.v20191022"
         },
         "org.eclipse.jetty:jetty-util": {
-            "locked": "9.3.9.v20160517",
+            "locked": "9.4.22.v20191022",
             "transitive": [
                 "org.eclipse.jetty:jetty-http",
                 "org.eclipse.jetty:jetty-io"
@@ -3873,13 +3940,13 @@
             ]
         },
         "org.jruby.jcodings:jcodings": {
-            "locked": "1.0.13",
+            "locked": "1.0.43",
             "transitive": [
                 "org.jruby.joni:joni"
             ]
         },
         "org.jruby.joni:joni": {
-            "locked": "2.1.11",
+            "locked": "2.1.27",
             "transitive": [
                 "net.thisptr:jackson-jq"
             ]
@@ -3891,11 +3958,11 @@
             ]
         },
         "org.mockito:mockito-core": {
-            "locked": "1.10.19",
-            "requested": "1.10.19"
+            "locked": "3.1.0",
+            "requested": "3.1.0"
         },
         "org.objenesis:objenesis": {
-            "locked": "2.1",
+            "locked": "2.6",
             "transitive": [
                 "org.mockito:mockito-core"
             ]
@@ -3913,7 +3980,7 @@
             ]
         },
         "org.slf4j:slf4j-api": {
-            "locked": "1.7.25",
+            "locked": "1.8.0-alpha1",
             "transitive": [
                 "com.jayway.jsonpath:json-path",
                 "com.netflix.conductor:conductor-common",
@@ -3921,8 +3988,13 @@
                 "com.netflix.spectator:spectator-api",
                 "io.swagger:swagger-core",
                 "io.swagger:swagger-models",
-                "org.apache.kafka:kafka-clients"
+                "org.apache.kafka:kafka-clients",
+                "org.slf4j:slf4j-log4j12"
             ]
+        },
+        "org.slf4j:slf4j-log4j12": {
+            "locked": "1.8.0-alpha1",
+            "requested": "1.8.0-alpha1"
         },
         "org.xerial.snappy:snappy-java": {
             "locked": "1.1.7.2",
@@ -3951,7 +4023,7 @@
             ]
         },
         "com.amazonaws:aws-java-sdk-core": {
-            "locked": "1.11.641",
+            "locked": "1.11.700",
             "transitive": [
                 "com.amazonaws:aws-java-sdk-kms",
                 "com.amazonaws:aws-java-sdk-s3",
@@ -3971,11 +4043,11 @@
             ]
         },
         "com.amazonaws:aws-java-sdk-sqs": {
-            "locked": "1.11.641",
+            "locked": "1.11.700",
             "requested": "latest.release"
         },
         "com.amazonaws:jmespath-java": {
-            "locked": "1.11.641",
+            "locked": "1.11.700",
             "transitive": [
                 "com.amazonaws:aws-java-sdk-kms",
                 "com.amazonaws:aws-java-sdk-s3",
@@ -3983,7 +4055,7 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.7.0",
+            "locked": "2.10.0",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "io.swagger:swagger-core",
@@ -3991,7 +4063,7 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.7.5",
+            "locked": "2.10.0",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor",
@@ -4006,7 +4078,7 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.7.5",
+            "locked": "2.10.0",
             "transitive": [
                 "com.amazonaws:aws-java-sdk-core",
                 "com.amazonaws:jmespath-java",
@@ -4275,6 +4347,24 @@
             "locked": "4.12",
             "requested": "4.12"
         },
+        "log4j:log4j": {
+            "locked": "1.2.17",
+            "transitive": [
+                "org.slf4j:slf4j-log4j12"
+            ]
+        },
+        "net.bytebuddy:byte-buddy": {
+            "locked": "1.9.10",
+            "transitive": [
+                "org.mockito:mockito-core"
+            ]
+        },
+        "net.bytebuddy:byte-buddy-agent": {
+            "locked": "1.9.10",
+            "transitive": [
+                "org.mockito:mockito-core"
+            ]
+        },
         "net.minidev:accessors-smart": {
             "locked": "1.1",
             "transitive": [
@@ -4288,8 +4378,8 @@
             ]
         },
         "net.thisptr:jackson-jq": {
-            "locked": "0.0.8",
-            "requested": "0.0.8"
+            "locked": "0.0.11",
+            "requested": "0.0.11"
         },
         "org.apache.commons:commons-lang3": {
             "locked": "3.2.1",
@@ -4322,36 +4412,37 @@
             ]
         },
         "org.eclipse.jetty:jetty-http": {
-            "locked": "9.3.9.v20160517",
+            "locked": "9.4.22.v20191022",
             "transitive": [
                 "org.eclipse.jetty:jetty-server"
             ]
         },
         "org.eclipse.jetty:jetty-io": {
-            "locked": "9.3.9.v20160517",
+            "locked": "9.4.22.v20191022",
             "transitive": [
+                "org.eclipse.jetty:jetty-http",
                 "org.eclipse.jetty:jetty-server"
             ]
         },
         "org.eclipse.jetty:jetty-security": {
-            "locked": "9.3.9.v20160517",
+            "locked": "9.4.22.v20191022",
             "transitive": [
                 "org.eclipse.jetty:jetty-servlet"
             ]
         },
         "org.eclipse.jetty:jetty-server": {
-            "locked": "9.3.9.v20160517",
-            "requested": "9.3.9.v20160517",
+            "locked": "9.4.22.v20191022",
+            "requested": "9.4.22.v20191022",
             "transitive": [
                 "org.eclipse.jetty:jetty-security"
             ]
         },
         "org.eclipse.jetty:jetty-servlet": {
-            "locked": "9.3.9.v20160517",
-            "requested": "9.3.9.v20160517"
+            "locked": "9.4.22.v20191022",
+            "requested": "9.4.22.v20191022"
         },
         "org.eclipse.jetty:jetty-util": {
-            "locked": "9.3.9.v20160517",
+            "locked": "9.4.22.v20191022",
             "transitive": [
                 "org.eclipse.jetty:jetty-http",
                 "org.eclipse.jetty:jetty-io"
@@ -4396,13 +4487,13 @@
             ]
         },
         "org.jruby.jcodings:jcodings": {
-            "locked": "1.0.13",
+            "locked": "1.0.43",
             "transitive": [
                 "org.jruby.joni:joni"
             ]
         },
         "org.jruby.joni:joni": {
-            "locked": "2.1.11",
+            "locked": "2.1.27",
             "transitive": [
                 "net.thisptr:jackson-jq"
             ]
@@ -4414,11 +4505,11 @@
             ]
         },
         "org.mockito:mockito-core": {
-            "locked": "1.10.19",
-            "requested": "1.10.19"
+            "locked": "3.1.0",
+            "requested": "3.1.0"
         },
         "org.objenesis:objenesis": {
-            "locked": "2.1",
+            "locked": "2.6",
             "transitive": [
                 "org.mockito:mockito-core"
             ]
@@ -4436,7 +4527,7 @@
             ]
         },
         "org.slf4j:slf4j-api": {
-            "locked": "1.7.25",
+            "locked": "1.8.0-alpha1",
             "transitive": [
                 "com.jayway.jsonpath:json-path",
                 "com.netflix.conductor:conductor-common",
@@ -4444,8 +4535,13 @@
                 "com.netflix.spectator:spectator-api",
                 "io.swagger:swagger-core",
                 "io.swagger:swagger-models",
-                "org.apache.kafka:kafka-clients"
+                "org.apache.kafka:kafka-clients",
+                "org.slf4j:slf4j-log4j12"
             ]
+        },
+        "org.slf4j:slf4j-log4j12": {
+            "locked": "1.8.0-alpha1",
+            "requested": "1.8.0-alpha1"
         },
         "org.xerial.snappy:snappy-java": {
             "locked": "1.1.7.2",

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Netflix, Inc.
+ * Copyright 2020 Netflix, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -41,7 +41,9 @@ import com.netflix.conductor.common.metadata.tasks.TaskDef;
 import com.netflix.conductor.common.run.Workflow;
 import com.netflix.conductor.common.utils.RetryUtil;
 import com.netflix.conductor.core.execution.ApplicationException;
+import com.netflix.conductor.core.execution.ApplicationException.Code;
 import com.netflix.conductor.dao.ExecutionDAO;
+import com.netflix.conductor.dao.PollDataDAO;
 import com.netflix.conductor.metrics.Monitors;
 import com.netflix.conductor.util.Statements;
 import java.util.ArrayList;
@@ -56,7 +58,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Trace
-public class CassandraExecutionDAO extends CassandraBaseDAO implements ExecutionDAO {
+public class CassandraExecutionDAO extends CassandraBaseDAO implements ExecutionDAO, PollDataDAO {
     private static final Logger LOGGER = LoggerFactory.getLogger(CassandraExecutionDAO.class);
     private static final String CLASS_NAME = CassandraExecutionDAO.class.getSimpleName();
 
@@ -230,15 +232,6 @@ public class CassandraExecutionDAO extends CassandraBaseDAO implements Execution
         return false;
     }
 
-    /**
-     * This is a dummy implementation and this feature is not implemented
-     * for Cassandra backed Conductor
-     */
-    @Override
-    public boolean exceedsRateLimitPerFrequency(Task task) {
-        throw new UnsupportedOperationException("This method is not implemented in CassandraExecutionDAO. Please use ExecutionDAOFacade instead.");
-    }
-
     @Override
     public boolean removeTask(String taskId) {
         Task task = getTask(taskId);
@@ -258,15 +251,19 @@ public class CassandraExecutionDAO extends CassandraBaseDAO implements Execution
             }
             // TODO: implement for query against multiple shards
 
-            ResultSet resultSet = session.execute(selectTaskStatement.bind(UUID.fromString(workflowId), DEFAULT_SHARD_ID, taskId));
+            ResultSet resultSet = session
+                .execute(selectTaskStatement.bind(UUID.fromString(workflowId), DEFAULT_SHARD_ID, taskId));
             return Optional.ofNullable(resultSet.one())
-                    .map(row -> {
-                        Task task = readValue(row.getString(PAYLOAD_KEY), Task.class);
-                        recordCassandraDaoRequests("getTask", task.getTaskType(), task.getWorkflowType());
-                        recordCassandraDaoPayloadSize("getTask", toJson(task).length(), task.getTaskType(), task.getWorkflowType());
-                        return task;
-                    })
-                    .orElse(null);
+                .map(row -> {
+                    Task task = readValue(row.getString(PAYLOAD_KEY), Task.class);
+                    recordCassandraDaoRequests("getTask", task.getTaskType(), task.getWorkflowType());
+                    recordCassandraDaoPayloadSize("getTask", toJson(task).length(), task.getTaskType(),
+                        task.getWorkflowType());
+                    return task;
+                })
+                .orElse(null);
+        } catch (ApplicationException ae) {
+            throw ae;
         } catch (Exception e) {
             Monitors.error(CLASS_NAME, "getTask");
             String errorMsg = String.format("Error getting task by id: %s", taskId);
@@ -421,6 +418,11 @@ public class CassandraExecutionDAO extends CassandraBaseDAO implements Execution
             return workflow;
         } catch (ApplicationException e) {
             throw e;
+        } catch (IllegalArgumentException e) {
+            Monitors.error(CLASS_NAME, "getWorkflow");
+            String errorMsg = String.format("Invalid workflow id: %s", workflowId);
+            LOGGER.error(errorMsg, e);
+            throw new ApplicationException(Code.INVALID_INPUT, errorMsg, e);
         } catch (Exception e) {
             Monitors.error(CLASS_NAME, "getWorkflow");
             String errorMsg = String.format("Failed to get workflow: %s", workflowId);
@@ -529,7 +531,7 @@ public class CassandraExecutionDAO extends CassandraBaseDAO implements Execution
      * for Cassandra backed Conductor
      */
     @Override
-    public void updateLastPoll(String taskDefName, String domain, String workerId) {
+    public void updateLastPollData(String taskDefName, String domain, String workerId) {
         throw new UnsupportedOperationException("This method is not implemented in CassandraExecutionDAO. Please use ExecutionDAOFacade instead.");
     }
 
@@ -634,8 +636,13 @@ public class CassandraExecutionDAO extends CassandraBaseDAO implements Execution
         try {
             ResultSet resultSet = session.execute(selectTaskLookupStatement.bind(UUID.fromString(taskId)));
             return Optional.ofNullable(resultSet.one())
-                    .map(row -> row.getUUID(WORKFLOW_ID_KEY).toString())
-                    .orElse(null);
+                .map(row -> row.getUUID(WORKFLOW_ID_KEY).toString())
+                .orElse(null);
+        } catch (IllegalArgumentException iae) {
+            Monitors.error(CLASS_NAME, "lookupWorkflowIdFromTaskId");
+            String errorMsg = String.format("Invalid task id: %s", taskId);
+            LOGGER.error(errorMsg, iae);
+            throw new ApplicationException(Code.INVALID_INPUT, errorMsg, iae);
         } catch (Exception e) {
             Monitors.error(CLASS_NAME, "lookupWorkflowIdFromTaskId");
             String errorMsg = String.format("Failed to lookup workflowId from taskId: %s", taskId);
