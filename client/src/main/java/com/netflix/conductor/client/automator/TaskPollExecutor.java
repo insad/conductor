@@ -1,43 +1,41 @@
 /*
  * Copyright 2020 Netflix, Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
  */
 package com.netflix.conductor.client.automator;
 
 import com.google.common.base.Stopwatch;
 import com.netflix.appinfo.InstanceInfo.InstanceStatus;
+import com.netflix.conductor.client.config.PropertyFactory;
 import com.netflix.conductor.client.http.TaskClient;
 import com.netflix.conductor.client.telemetry.MetricsContainer;
-import com.netflix.conductor.client.worker.PropertyFactory;
 import com.netflix.conductor.client.worker.Worker;
 import com.netflix.conductor.common.metadata.tasks.Task;
 import com.netflix.conductor.common.metadata.tasks.TaskResult;
 import com.netflix.conductor.common.utils.RetryUtil;
 import com.netflix.discovery.EurekaClient;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.concurrent.BasicThreadFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Manages the threadpool used by the workers for execution and server communication (polling and task update).
@@ -46,28 +44,28 @@ class TaskPollExecutor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TaskPollExecutor.class);
 
-    private EurekaClient eurekaClient;
-    private TaskClient taskClient;
-    private int updateRetryCount;
-    private ExecutorService executorService;
-    private PollingSemaphore pollingSemaphore;
+    private final EurekaClient eurekaClient;
+    private final TaskClient taskClient;
+    private final int updateRetryCount;
+    private final ExecutorService executorService;
+    private final PollingSemaphore pollingSemaphore;
+    private final Map<String/*taskType*/, String/*domain*/> taskToDomain;
 
     private static final String DOMAIN = "domain";
     private static final String ALL_WORKERS = "all";
 
     TaskPollExecutor(EurekaClient eurekaClient, TaskClient taskClient, int threadCount, int updateRetryCount,
-        String workerNamePrefix) {
+        Map<String, String> taskToDomain, String workerNamePrefix) {
         this.eurekaClient = eurekaClient;
         this.taskClient = taskClient;
         this.updateRetryCount = updateRetryCount;
+        this.taskToDomain = taskToDomain;
 
         LOGGER.info("Initialized the TaskPollExecutor with {} threads", threadCount);
 
-        AtomicInteger count = new AtomicInteger(0);
-
         this.executorService = Executors.newFixedThreadPool(threadCount,
             new BasicThreadFactory.Builder()
-                .namingPattern(workerNamePrefix + count.getAndIncrement())
+                .namingPattern(workerNamePrefix)
                 .uncaughtExceptionHandler(uncaughtExceptionHandler)
                 .build());
 
@@ -94,7 +92,8 @@ class TaskPollExecutor {
 
             String taskType = worker.getTaskDefName();
             String domain = Optional.ofNullable(PropertyFactory.getString(taskType, DOMAIN, null))
-                .orElse(PropertyFactory.getString(ALL_WORKERS, DOMAIN, null));
+                .orElseGet(() -> Optional.ofNullable(PropertyFactory.getString(ALL_WORKERS, DOMAIN, null))
+                    .orElse(taskToDomain.get(taskType)));
 
             LOGGER.debug("Polling task of type: {} in domain: '{}'", taskType, domain);
             task = MetricsContainer.getPollTimer(taskType)
@@ -212,15 +211,16 @@ class TaskPollExecutor {
                     worker.getIdentity());
             String methodName = "updateWithRetry";
 
-            new RetryUtil<>().retryOnException(() ->
+            TaskResult finalResult = new RetryUtil<TaskResult>().retryOnException(() ->
             {
-                taskClient.evaluateAndUploadLargePayload(result, task.getTaskType());
-                return null;
+                TaskResult taskResult = result.copy();
+                taskClient.evaluateAndUploadLargePayload(taskResult, task.getTaskType());
+                return taskResult;
             }, null, null, count, evaluatePayloadDesc, methodName);
 
             new RetryUtil<>().retryOnException(() ->
             {
-                taskClient.updateTask(result);
+                taskClient.updateTask(finalResult);
                 return null;
             }, null, null, count, updateTaskDesc, methodName);
         } catch (Exception e) {
