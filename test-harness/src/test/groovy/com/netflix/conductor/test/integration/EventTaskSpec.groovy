@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Netflix, Inc.
+ * Copyright 2022 Netflix, Inc.
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -12,9 +12,13 @@
  */
 package com.netflix.conductor.test.integration
 
+import org.springframework.beans.factory.annotation.Autowired
+
 import com.netflix.conductor.common.metadata.tasks.Task
 import com.netflix.conductor.common.metadata.tasks.TaskType
 import com.netflix.conductor.common.run.Workflow
+import com.netflix.conductor.core.execution.tasks.Event
+import com.netflix.conductor.dao.QueueDAO
 import com.netflix.conductor.test.base.AbstractSpecification
 
 import static com.netflix.conductor.test.util.WorkflowTestUtil.verifyPolledAndAcknowledgedTask
@@ -23,19 +27,30 @@ class EventTaskSpec extends AbstractSpecification {
 
     def EVENT_BASED_WORKFLOW = 'test_event_workflow'
 
+    @Autowired
+    Event eventTask
+
+    @Autowired
+    QueueDAO queueDAO
+
     def setup() {
         workflowTestUtil.registerWorkflows('event_workflow_integration_test.json')
     }
 
-    def "Verify that a event based simple work flow is executed"() {
+    def "Verify that a event based simple workflow is executed"() {
         when: "Start a event based workflow"
         def workflowInstanceId = workflowExecutor.startWorkflow(EVENT_BASED_WORKFLOW, 1,
                 '', [:], null, null, null)
 
-        and: "Sleep for 1 second to mimic the event trigger"
-        Thread.sleep(1000)
+        then: "Retrieve the workflow"
+        with(workflowExecutionService.getExecutionStatus(workflowInstanceId, true)) {
+            status == Workflow.WorkflowStatus.RUNNING
+            tasks.size() == 2
+            tasks[0].taskType == TaskType.EVENT.name()
+            tasks[0].status == Task.Status.COMPLETED
+        }
 
-        then: "Retrieve the workflow "
+        then: "Retrieve the workflow"
         with(workflowExecutionService.getExecutionStatus(workflowInstanceId, true)) {
             status == Workflow.WorkflowStatus.RUNNING
             tasks.size() == 2

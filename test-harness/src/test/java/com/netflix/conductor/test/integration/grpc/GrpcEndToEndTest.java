@@ -12,10 +12,12 @@
  */
 package com.netflix.conductor.test.integration.grpc;
 
+import org.junit.Before;
+
+import com.netflix.conductor.client.grpc.EventClient;
 import com.netflix.conductor.client.grpc.MetadataClient;
 import com.netflix.conductor.client.grpc.TaskClient;
 import com.netflix.conductor.client.grpc.WorkflowClient;
-import org.junit.Before;
 
 public class GrpcEndToEndTest extends AbstractGrpcEndToEndTest {
 
@@ -24,5 +26,6 @@ public class GrpcEndToEndTest extends AbstractGrpcEndToEndTest {
         taskClient = new TaskClient("localhost", 8092);
         workflowClient = new WorkflowClient("localhost", 8092);
         metadataClient = new MetadataClient("localhost", 8092);
+        eventClient = new EventClient("localhost", 8092);
     }
 }

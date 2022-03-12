@@ -35,7 +35,7 @@ Removed APIs:
 ## What's changed
 Changes to configurations:
 
-`azureblob-storage` module:
+### `azureblob-storage` module:
 
 | Old | New | Default |
 | --- | --- | --- |
@@ -49,7 +49,7 @@ Changes to configurations:
 | workflow.external.payload.storage.azure_blob.task_input_path | conductor.external-payload-storage.azureblob.taskInputPath | task/input/ |
 | workflow.external.payload.storage.azure_blob.task_output_path | conductor.external-payload-storage.azureblob.taskOutputPath | task/output/ |
 
-`cassandra-persistence` module:
+### `cassandra-persistence` module:
 
 | Old | New | Default |
 | --- | --- | --- |
@@ -67,7 +67,7 @@ Changes to configurations:
 | conductor.eventhandler.cache.refresh.time.seconds | conductor.cassandra.eventHandlerCacheRefreshInterval | 60s |
 | workflow.event.execution.persistence.ttl.seconds | conductor.cassandra.eventExecutionPersistenceTTL | 0s |
 
-`contribs` module:
+### `contribs` module:
 
 | Old | New | Default |
 | --- | --- | --- |
@@ -121,7 +121,7 @@ Changes to configurations:
 | kafka.publish.producer.cache.size | conductor.tasks.kafka-publish.cacheSize | 10 |
 | kafka.publish.producer.cache.time.ms | conductor.tasks.kafka-publish.cacheTime | 120000ms |
 
-`core` module:
+### `core` module:
 
 | Old | New | Default |
 | --- | --- | --- |
@@ -174,7 +174,7 @@ Changes to configurations:
 | workflow.monitor.metadata.refresh.counter | conductor.workflow-monitor.metadataRefreshInterval | 10 |
 | workflow.monitor.stats.freq.seconds | conductor.workflow-monitor.statsFrequency | 60s |
 
-`es6-persistence` module:
+### `es6-persistence` module:
 
 | Old | New | Default |
 | --- | --- | --- |
@@ -195,14 +195,37 @@ Changes to configurations:
 | workflow.elasticsearch.auto.index.management.enabled | conductor.elasticsearch.autoIndexManagementEnabled | true |
 | workflow.elasticsearch.document.type.override | conductor.elasticsearch.documentTypeOverride | "" |
 
-`grpc-server` module:
+### `es7-persistence` module:
+
+| Old | New | Default |
+| --- | --- | --- |
+| workflow.elasticsearch.version | conductor.elasticsearch.version | 7 |
+| workflow.elasticsearch.url | conductor.elasticsearch.url | localhost:9300 |
+| workflow.elasticsearch.index.name | conductor.elasticsearch.indexPrefix | conductor |
+| workflow.elasticsearch.tasklog.index.name | _removed_ |  |
+| workflow.elasticsearch.cluster.health.color | conductor.elasticsearch.clusterHealthColor | green |
+| workflow.elasticsearch.archive.search.batchSize | _removed_ |  |
+| workflow.elasticsearch.index.batchSize | conductor.elasticsearch.indexBatchSize | 1 |
+| workflow.elasticsearch.async.dao.worker.queue.size | conductor.elasticsearch.asyncWorkerQueueSize | 100 |
+| workflow.elasticsearch.async.dao.max.pool.size | conductor.elasticsearch.asyncMaxPoolSize | 12 |
+| workflow.elasticsearch.async.buffer.flush.timeout.seconds | conductor.elasticsearch.asyncBufferFlushTimeout | 10s |
+| workflow.elasticsearch.index.shard.count | conductor.elasticsearch.indexShardCount | 5 |
+| workflow.elasticsearch.index.replicas.count | conductor.elasticsearch.indexReplicasCount | 1 |
+| tasklog.elasticsearch.query.size | conductor.elasticsearch.taskLogResultLimit | 10 |
+| workflow.elasticsearch.rest.client.connectionRequestTimeout.milliseconds | conductor.elasticsearch.restClientConnectionRequestTimeout | -1 |
+| workflow.elasticsearch.auto.index.management.enabled | conductor.elasticsearch.autoIndexManagementEnabled | true |
+| workflow.elasticsearch.document.type.override | conductor.elasticsearch.documentTypeOverride | "" |
+| workflow.elasticsearch.basic.auth.username | conductor.elasticsearch.username | "" |
+| workflow.elasticsearch.basic.auth.password | conductor.elasticsearch.password | "" |
+
+### `grpc-server` module:
 
 | Old | New | Default |
 | --- | --- | --- |
 | conductor.grpc.server.port | conductor.grpc-server.port | 8090 |
 | conductor.grpc.server.reflectionEnabled | conductor.grpc-server.reflectionEnabled | true |
 
-`mysql-persistence` module (v3.0.0 - v3.0.5):
+### `mysql-persistence` module (v3.0.0 - v3.0.5):
 
 | Old | New | Default |
 | --- | --- | --- |
@@ -220,7 +243,7 @@ Changes to configurations:
 | conductor.mysql.autocommit | conductor.mysql.autoCommit | false |
 | conductor.taskdef.cache.refresh.time.seconds | conductor.mysql.taskDefCacheRefreshInterval | 60s |
 
-`mysql-persistence` module (v3.0.5+):
+### `mysql-persistence` module (v3.0.5+):
 
 | Old | New |
 | --- | --- |
@@ -240,7 +263,7 @@ Changes to configurations:
 
 * for more properties and default values: https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#application-properties.data.spring.datasource.hikari
 
-`postgres-persistence` module (v3.0.0 - v3.0.5):
+### `postgres-persistence` module (v3.0.0 - v3.0.5):
 
 | Old | New | Default |
 | --- | --- | --- |
@@ -258,7 +281,7 @@ Changes to configurations:
 | conductor.postgres.autocommit | conductor.postgres.autoCommit | false |
 | conductor.taskdef.cache.refresh.time.seconds | conductor.postgres.taskDefCacheRefreshInterval | 60s |
 
-`postgres-persistence` module (v3.0.5+):
+### `postgres-persistence` module (v3.0.5+):
 
 | Old | New |
 | --- | --- |
@@ -278,7 +301,7 @@ Changes to configurations:
 
 * for more properties and default values: https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#application-properties.data.spring.datasource.hikari
 
-`redis-lock` module:
+### `redis-lock` module:
 
 | Old | New | Default |
 | --- | --- | --- |
@@ -289,7 +312,7 @@ Changes to configurations:
 | workflow.decider.locking.namespace | conductor.redis-lock.namespace | "" |
 | workflow.decider.locking.exceptions.ignore | conductor.redis-lock.ignoreLockingExceptions | false |
 
-`redis-persistence` module:
+### `redis-persistence` module:
 
 | Old | New | Default |
 | --- | --- | --- |
@@ -309,7 +332,7 @@ Changes to configurations:
 | conductor.taskdef.cache.refresh.time.seconds | conductor.redis.taskDefCacheRefreshInterval | 60s |
 | workflow.event.execution.persistence.ttl.seconds | conductor.redis.eventExecutionPersistenceTTL | 60s |
 
-`zookeeper-lock` module:
+### `zookeeper-lock` module:
 
 | Old | New | Default |
 | --- | --- | --- |
@@ -318,7 +341,7 @@ Changes to configurations:
 | workflow.zookeeper.lock.connectionTimeoutMs | conductor.zookeeper-lock.connectionTimeout | 15000ms |
 | workflow.decider.locking.namespace | conductor.zookeeper-lock.namespace | "" |
 
-Component configuration:
+### Component configuration:
 
 | Old | New | Default |
 | --- | --- | --- |

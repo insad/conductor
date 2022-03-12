@@ -1,16 +1,18 @@
 /*
- *  Copyright 2021 Netflix, Inc.
- *  <p>
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  <p>
- *  http://www.apache.org/licenses/LICENSE-2.0
- *  <p>
- *  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
- *  an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
- *  specific language governing permissions and limitations under the License.
+ * Copyright 2022 Netflix, Inc.
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
  */
 package com.netflix.conductor.test.integration
+
+import org.springframework.beans.factory.annotation.Autowired
 
 import com.netflix.conductor.common.metadata.tasks.Task
 import com.netflix.conductor.common.metadata.tasks.TaskDef
@@ -19,7 +21,7 @@ import com.netflix.conductor.common.run.Workflow
 import com.netflix.conductor.core.execution.tasks.SubWorkflow
 import com.netflix.conductor.test.base.AbstractSpecification
 import com.netflix.conductor.test.utils.UserTask
-import org.springframework.beans.factory.annotation.Autowired
+
 import spock.lang.Shared
 
 import static com.netflix.conductor.test.util.WorkflowTestUtil.verifyPolledAndAcknowledgedLargePayloadTask
@@ -46,6 +48,9 @@ class ExternalPayloadStorageSpec extends AbstractSpecification {
     @Shared
     def WORKFLOW_WITH_DECISION_AND_TERMINATE = 'ConditionalTerminateWorkflow'
 
+    @Shared
+    def WORKFLOW_WITH_SYNCHRONOUS_SYSTEM_TASK = 'workflow_with_synchronous_system_task'
+
     @Autowired
     UserTask userTask
 
@@ -57,7 +62,8 @@ class ExternalPayloadStorageSpec extends AbstractSpecification {
                 'conditional_system_task_workflow_integration_test.json',
                 'fork_join_integration_test.json',
                 'simple_workflow_with_sub_workflow_inline_def_integration_test.json',
-                'decision_and_terminate_integration_test.json'
+                'decision_and_terminate_integration_test.json',
+                'workflow_with_synchronous_system_task.json'
         )
     }
 
@@ -76,8 +82,6 @@ class ExternalPayloadStorageSpec extends AbstractSpecification {
         then: "verify that the workflow is in a RUNNING state"
         with(workflowExecutionService.getExecutionStatus(workflowInstanceId, true)) {
             status == Workflow.WorkflowStatus.RUNNING
-            input.isEmpty()
-            externalInputPayloadStoragePath == workflowInputPath
             tasks.size() == 1
             tasks[0].taskType == 'integration_task_1'
             tasks[0].status == Task.Status.SCHEDULED
@@ -93,8 +97,6 @@ class ExternalPayloadStorageSpec extends AbstractSpecification {
         and: "verify that the 'integration_task1' is complete and the next task is scheduled"
         with(workflowExecutionService.getExecutionStatus(workflowInstanceId, true)) {
             status == Workflow.WorkflowStatus.RUNNING
-            input.isEmpty()
-            externalInputPayloadStoragePath == workflowInputPath
             tasks.size() == 2
             tasks[0].taskType == 'integration_task_1'
             tasks[0].status == Task.Status.COMPLETED
@@ -114,8 +116,6 @@ class ExternalPayloadStorageSpec extends AbstractSpecification {
         then: "verify that the 'integration_task_2' is complete and the workflow is completed"
         with(workflowExecutionService.getExecutionStatus(workflowInstanceId, true)) {
             status == Workflow.WorkflowStatus.COMPLETED
-            input.isEmpty()
-            externalInputPayloadStoragePath == workflowInputPath
             tasks.size() == 2
             output.isEmpty()
             externalOutputPayloadStoragePath == WORKFLOW_OUTPUT_PATH
@@ -126,6 +126,47 @@ class ExternalPayloadStorageSpec extends AbstractSpecification {
             tasks[1].taskType == 'integration_task_2'
             tasks[1].status == Task.Status.COMPLETED
             tasks[1].externalInputPayloadStoragePath == INPUT_PAYLOAD_PATH
+        }
+    }
+
+    def "Test workflow with synchronous system task using external payload storage"() {
+        given: "An existing workflow definition with sync system task followed by a simple task"
+        metadataService.getWorkflowDef(WORKFLOW_WITH_SYNCHRONOUS_SYSTEM_TASK, 1)
+
+        and: "input required to start large payload workflow"
+        def correlationId = 'wf_external_storage'
+        def workflowInputPath = INITIAL_WORKFLOW_INPUT_PATH
+
+        when: "the workflow is started"
+        def workflowInstanceId = workflowExecutor.startWorkflow(WORKFLOW_WITH_SYNCHRONOUS_SYSTEM_TASK, 1, correlationId, null, workflowInputPath, null, null)
+
+        then: "verify that the workflow is in a RUNNING state"
+        with(workflowExecutionService.getExecutionStatus(workflowInstanceId, true)) {
+            status == Workflow.WorkflowStatus.RUNNING
+            tasks.size() == 1
+            tasks[0].taskType == 'integration_task_1'
+            tasks[0].status == Task.Status.SCHEDULED
+        }
+
+        when: "poll and complete the 'integration_task_1' with external payload storage"
+        def taskOutputPath = TASK_OUTPUT_PATH
+        def pollAndCompleteLargePayloadTask = workflowTestUtil.pollAndCompleteLargePayloadTask('integration_task_1', 'task1.integration.worker', taskOutputPath)
+
+        then: "verify that the 'integration_task_1' was polled and acknowledged"
+        verifyPolledAndAcknowledgedLargePayloadTask(pollAndCompleteLargePayloadTask)
+
+        and: "verify that the 'integration_task1' is complete and the next task is scheduled"
+        with(workflowExecutionService.getExecutionStatus(workflowInstanceId, true)) {
+            status == Workflow.WorkflowStatus.COMPLETED
+            tasks.size() == 2
+            tasks[0].taskType == 'integration_task_1'
+            tasks[0].status == Task.Status.COMPLETED
+            tasks[0].outputData.isEmpty()
+            tasks[0].externalOutputPayloadStoragePath == taskOutputPath
+            tasks[1].taskType == 'JSON_JQ_TRANSFORM'
+            tasks[1].status == Task.Status.COMPLETED
+            tasks[1].externalInputPayloadStoragePath == INPUT_PAYLOAD_PATH
+            tasks[1].outputData['result'] == 104 // output of .tp2.TEST_SAMPLE | length expression from output.json. On assertion failure, check workflow definition and output.json
         }
     }
 
@@ -144,8 +185,6 @@ class ExternalPayloadStorageSpec extends AbstractSpecification {
         then: "verify that the workflow is in a RUNNING state"
         with(workflowExecutionService.getExecutionStatus(workflowInstanceId, true)) {
             status == Workflow.WorkflowStatus.RUNNING
-            input.isEmpty()
-            externalInputPayloadStoragePath == workflowInputPath
             tasks.size() == 1
             tasks[0].taskType == 'integration_task_1'
             tasks[0].status == Task.Status.SCHEDULED
@@ -161,8 +200,6 @@ class ExternalPayloadStorageSpec extends AbstractSpecification {
         and: "verify that the 'integration_task1' is complete and the next task is scheduled"
         with(workflowExecutionService.getExecutionStatus(workflowInstanceId, true)) {
             status == Workflow.WorkflowStatus.RUNNING
-            input.isEmpty()
-            externalInputPayloadStoragePath == workflowInputPath
             tasks.size() == 3
             tasks[0].taskType == 'integration_task_1'
             tasks[0].status == Task.Status.COMPLETED
@@ -184,8 +221,6 @@ class ExternalPayloadStorageSpec extends AbstractSpecification {
         then: "verify that the user task is in a COMPLETED state"
         with(workflowExecutionService.getExecutionStatus(workflowInstanceId, true)) {
             status == Workflow.WorkflowStatus.RUNNING
-            input.isEmpty()
-            externalInputPayloadStoragePath == workflowInputPath
             tasks.size() == 4
             tasks[0].taskType == 'integration_task_1'
             tasks[0].status == Task.Status.COMPLETED
@@ -212,8 +247,6 @@ class ExternalPayloadStorageSpec extends AbstractSpecification {
         then: "verify that the 'integration_task_3' is complete and the workflow is completed"
         with(workflowExecutionService.getExecutionStatus(workflowInstanceId, true)) {
             status == Workflow.WorkflowStatus.COMPLETED
-            input.isEmpty()
-            externalInputPayloadStoragePath == workflowInputPath
             tasks.size() == 4
             output.isEmpty()
             externalOutputPayloadStoragePath == WORKFLOW_OUTPUT_PATH
@@ -248,8 +281,6 @@ class ExternalPayloadStorageSpec extends AbstractSpecification {
         then: "verify that the workflow is in a RUNNING state"
         with(workflowExecutionService.getExecutionStatus(workflowInstanceId, true)) {
             status == Workflow.WorkflowStatus.RUNNING
-            input.isEmpty()
-            externalInputPayloadStoragePath == workflowInputPath
             tasks.size() == 4
             tasks[0].status == Task.Status.COMPLETED
             tasks[0].taskType == 'FORK'
@@ -270,8 +301,6 @@ class ExternalPayloadStorageSpec extends AbstractSpecification {
         and: "task is completed and the next task in the fork is scheduled"
         with(workflowExecutionService.getExecutionStatus(workflowInstanceId, true)) {
             status == Workflow.WorkflowStatus.RUNNING
-            input.isEmpty()
-            externalInputPayloadStoragePath == workflowInputPath
             tasks.size() == 5
             tasks[0].status == Task.Status.COMPLETED
             tasks[0].taskType == 'FORK'
@@ -295,8 +324,6 @@ class ExternalPayloadStorageSpec extends AbstractSpecification {
         and: "task is completed and the workflow is in running state"
         with(workflowExecutionService.getExecutionStatus(workflowInstanceId, true)) {
             status == Workflow.WorkflowStatus.RUNNING
-            input.isEmpty()
-            externalInputPayloadStoragePath == workflowInputPath
             tasks.size() == 5
             tasks[0].status == Task.Status.COMPLETED
             tasks[0].taskType == 'FORK'
@@ -319,8 +346,6 @@ class ExternalPayloadStorageSpec extends AbstractSpecification {
         and: "task is completed and the next task after join in scheduled"
         with(workflowExecutionService.getExecutionStatus(workflowInstanceId, true)) {
             status == Workflow.WorkflowStatus.RUNNING
-            input.isEmpty()
-            externalInputPayloadStoragePath == workflowInputPath
             tasks.size() == 6
             tasks[0].status == Task.Status.COMPLETED
             tasks[0].taskType == 'FORK'
@@ -351,8 +376,6 @@ class ExternalPayloadStorageSpec extends AbstractSpecification {
         and: "task is completed and the workflow is in completed state"
         with(workflowExecutionService.getExecutionStatus(workflowInstanceId, true)) {
             status == Workflow.WorkflowStatus.COMPLETED
-            input.isEmpty()
-            externalInputPayloadStoragePath == workflowInputPath
             tasks.size() == 6
             tasks[0].status == Task.Status.COMPLETED
             tasks[0].taskType == 'FORK'
@@ -390,8 +413,6 @@ class ExternalPayloadStorageSpec extends AbstractSpecification {
         then: "verify that the workflow is in a RUNNING state"
         with(workflowExecutionService.getExecutionStatus(workflowInstanceId, true)) {
             status == Workflow.WorkflowStatus.RUNNING
-            input.isEmpty()
-            externalInputPayloadStoragePath == workflowInputPath
             tasks.size() == 1
             tasks[0].taskType == 'integration_task_1'
             tasks[0].status == Task.Status.SCHEDULED
@@ -407,8 +428,6 @@ class ExternalPayloadStorageSpec extends AbstractSpecification {
         and: "verify that the 'integration_task1' is complete and the next task is scheduled"
         with(workflowExecutionService.getExecutionStatus(workflowInstanceId, true)) {
             status == Workflow.WorkflowStatus.RUNNING
-            input.isEmpty()
-            externalInputPayloadStoragePath == workflowInputPath
             tasks.size() == 2
             tasks[0].taskType == 'integration_task_1'
             tasks[0].status == Task.Status.COMPLETED
@@ -428,8 +447,6 @@ class ExternalPayloadStorageSpec extends AbstractSpecification {
         then: "verify that the sub workflow task is in a IN_PROGRESS state"
         with(workflowExecutionService.getExecutionStatus(workflowInstanceId, true)) {
             status == Workflow.WorkflowStatus.RUNNING
-            input.isEmpty()
-            externalInputPayloadStoragePath == workflowInputPath
             tasks.size() == 2
             tasks[0].taskType == 'integration_task_1'
             tasks[0].status == Task.Status.COMPLETED
@@ -479,8 +496,6 @@ class ExternalPayloadStorageSpec extends AbstractSpecification {
         sweep(workflowInstanceId)
         with(workflowExecutionService.getExecutionStatus(workflowInstanceId, true)) {
             status == Workflow.WorkflowStatus.RUNNING
-            input.isEmpty()
-            externalInputPayloadStoragePath == workflowInputPath
             tasks.size() == 3
             tasks[0].taskType == 'integration_task_1'
             tasks[0].status == Task.Status.COMPLETED
@@ -507,8 +522,6 @@ class ExternalPayloadStorageSpec extends AbstractSpecification {
         and: "verify that the task is completed and the workflow is in a completed state"
         with(workflowExecutionService.getExecutionStatus(workflowInstanceId, true)) {
             status == Workflow.WorkflowStatus.COMPLETED
-            input.isEmpty()
-            externalInputPayloadStoragePath == workflowInputPath
             tasks.size() == 3
             output.isEmpty()
             externalOutputPayloadStoragePath == WORKFLOW_OUTPUT_PATH
@@ -554,8 +567,6 @@ class ExternalPayloadStorageSpec extends AbstractSpecification {
         then: "verify that the workflow is in a RUNNING state"
         with(workflowExecutionService.getExecutionStatus(workflowInstanceId, true)) {
             status == Workflow.WorkflowStatus.RUNNING
-            input.isEmpty()
-            externalInputPayloadStoragePath == workflowInputPath
             tasks.size() == 1
             tasks[0].taskType == 'integration_task_1'
             tasks[0].status == Task.Status.SCHEDULED
@@ -571,8 +582,6 @@ class ExternalPayloadStorageSpec extends AbstractSpecification {
         and: "verify that the 'integration_task1' is complete and the next task is scheduled"
         with(workflowExecutionService.getExecutionStatus(workflowInstanceId, true)) {
             status == Workflow.WorkflowStatus.RUNNING
-            input.isEmpty()
-            externalInputPayloadStoragePath == workflowInputPath
             tasks.size() == 2
             tasks[0].taskType == 'integration_task_1'
             tasks[0].status == Task.Status.COMPLETED
@@ -592,8 +601,6 @@ class ExternalPayloadStorageSpec extends AbstractSpecification {
         and: "verify that task is retried and workflow is still running"
         with(workflowExecutionService.getExecutionStatus(workflowInstanceId, true)) {
             status == Workflow.WorkflowStatus.RUNNING
-            input.isEmpty()
-            externalInputPayloadStoragePath == workflowInputPath
             tasks.size() == 3
             tasks[0].taskType == 'integration_task_1'
             tasks[0].status == Task.Status.COMPLETED
@@ -618,8 +625,6 @@ class ExternalPayloadStorageSpec extends AbstractSpecification {
         and: "verify that the workflow is completed"
         with(workflowExecutionService.getExecutionStatus(workflowInstanceId, true)) {
             status == Workflow.WorkflowStatus.COMPLETED
-            input.isEmpty()
-            externalInputPayloadStoragePath == workflowInputPath
             tasks.size() == 3
             output.isEmpty()
             externalOutputPayloadStoragePath == WORKFLOW_OUTPUT_PATH
@@ -656,8 +661,6 @@ class ExternalPayloadStorageSpec extends AbstractSpecification {
         then: "verify that the workflow is in RUNNING state"
         with (workflowExecutionService.getExecutionStatus(workflowInstanceId, true)) {
             status == Workflow.WorkflowStatus.RUNNING
-            input.isEmpty()
-            externalInputPayloadStoragePath == workflowInputPath
             tasks.size() == 1
             tasks[0].taskType == 'integration_task_1'
             tasks[0].status == Task.Status.SCHEDULED
@@ -674,8 +677,6 @@ class ExternalPayloadStorageSpec extends AbstractSpecification {
         and: "verify that the 'integration_task_1' is COMPLETED and the workflow has FAILED due to terminate task"
         with(workflowExecutionService.getExecutionStatus(workflowInstanceId, true)) {
             status == Workflow.WorkflowStatus.FAILED
-            input.isEmpty()
-            externalInputPayloadStoragePath == workflowInputPath
             tasks.size() == 3
             output.isEmpty()
             externalOutputPayloadStoragePath == WORKFLOW_OUTPUT_PATH
